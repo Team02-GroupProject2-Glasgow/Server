@@ -55,6 +55,16 @@ io.on('connection', (socket) => {
           el.progress = payload.progress
         }
       })
+      function compare( a, b ) {
+        if ( a.progress < b.progress ){
+          return 1;
+        }
+        if ( a.progress > b.progress ){
+          return -1;
+        }
+        return 0;
+      }
+      user.sort( compare );
       io.emit('sendAllUser', user)
     })
 
