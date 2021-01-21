@@ -40,7 +40,7 @@ io.on('connection', (socket) => {
     socket.emit('players', user)
     socket.on('getName', (payload) => {
       let data = {
-        id: user.length + 1,
+        id: socket.id,
         name: payload,
         progress: 0
       }
@@ -76,11 +76,16 @@ io.on('connection', (socket) => {
     })
 
     socket.on('disconnect', () => {
-      // let new_user = user.map( el => {
-      //   el.id != payload.id
-      // })
-      // user = new_user
-      console.log('user logout');
+        console.log(user, 'sebelum')
+        function userLeave(id){
+            const index = user.findIndex(user => user.id === id)
+
+            if(index !== -1) {
+                return user.splice(index, 1)
+            }
+        }
+        userLeave(socket.id)
+        console.log(user, 'sesudah')
     })
 
 })
