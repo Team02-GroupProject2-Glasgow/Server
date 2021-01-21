@@ -1,0 +1,42 @@
+[
+    {
+        "id" : 1,
+        "word":"Alpukat"
+    },
+    {
+        "id" : 2,
+        "word":"Anggur"
+    },
+    {
+        "id" : 3,
+        "word":"Belimbing"
+    },
+    {
+        "id" : 4,
+        "word":"Beruang"
+    },
+    {
+        "id" : 5,
+        "word":"Durian"
+    },
+    {
+        "id" : 6,
+        "word":"Jerapah"
+    },
+    {
+        "id" : 7,
+        "word":"Mentimun"
+    },
+    {
+        "id" : 8,
+        "word":"Rambutan"
+    },
+    {
+        "id" : 9,
+        "word":"Stroberi"
+    },
+    {
+        "id" : 10,
+        "word":"Srikaya"
+    }
+]
