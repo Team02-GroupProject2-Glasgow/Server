@@ -37,7 +37,8 @@ io.on('connection', (socket) => {
     console.log('Socket.io client connected')
     // emit buat ngirim progres ngirim broadcast
     // jika ada event server nerima progres
-    socket.emit('players', user)
+    io.emit('players', user)
+    socket.emit('init', tebak_kata)
     socket.on('getName', (payload) => {
       let data = {
         id: socket.id,
@@ -69,10 +70,11 @@ io.on('connection', (socket) => {
       io.emit('sendAllUser', user)
     })
 
-    socket.on('joinRoom', ({ username, room }) => {
-      console.log(username, room);
-      const user = userJoin(socket.id, username, room);
-      socket.join(user.room);
+    socket.on('joinRoom', ({ username, room }) => {           
+      const newUser = userJoin(socket.id, username, room);
+      socket.join(newUser.room);
+      io.emit('players', user)
+      console.log(user, username, room);
     })
 
     socket.on('disconnect', () => {
