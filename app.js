@@ -1,4 +1,3 @@
-const { Socket } = require('dgram')
 const express = require('express')
 const app = express()
 const server = require('http').createServer(app)
@@ -69,8 +68,9 @@ io.on('connection', (socket) => {
 
 })
 
-server.listen(3000, () => {
-    console.log('Listening to port ' + 3000)
+const PORT = 3000 || process.env.PORT
+
+server.listen(PORT, () => {
+    console.log('Listening to port ' + PORT)
 })
 
-// ngetik nama, message, submit ==> server
