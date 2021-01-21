@@ -37,6 +37,7 @@ io.on('connection', (socket) => {
     console.log('Socket.io client connected')
     // emit buat ngirim progres ngirim broadcast
     // jika ada event server nerima progres
+    socket.emit('players', user)
     socket.on('getName', (payload) => {
       let data = {
         id: user.length + 1,
@@ -68,6 +69,12 @@ io.on('connection', (socket) => {
       io.emit('sendAllUser', user)
     })
 
+    socket.on('joinRoom', ({ username, room }) => {
+      console.log(username, room);
+      const user = userJoin(socket.id, username, room);
+      socket.join(user.room);
+    })
+
     socket.on('disconnect', () => {
       // let new_user = user.map( el => {
       //   el.id != payload.id
@@ -77,6 +84,13 @@ io.on('connection', (socket) => {
     })
 
 })
+
+function userJoin(id, username, room) {
+  const newUser = { id, username, room };
+  user.push(newUser);
+  console.log("🚀 ~ file: app.js ~ line 89 ~ userJoin ~ user", user)
+  return user;
+}
 
 const PORT = 3000 || process.env.PORT
 
