@@ -1,4 +1,3 @@
-const { Socket } = require('dgram')
 const express = require('express')
 const app = express()
 const server = require('http').createServer(app)
@@ -36,22 +35,21 @@ const tebak_kata = [
 
 io.on('connection', (socket) => {
     console.log('Socket.io client connected')
-    socket.emit('init', tebak_kata) // buat ngirim daftar kata ke browser kita sndiri
-    // emit buat ngirim progres ngirim broadcast
-    // jika ada event server nerima progres
-    socket.on('getName', (payload) => {
-      user.push({
-        // id: user.length + 1,
-        name: payload,
-        progress: 0
-      })
+
+    socket.emit('init', tebak_kata)
+
+    socket.on('getName', function(payload){
+        user.push({
+            id: user.length + 1,
+            name: payload,
+            progress: 0
+        })
     })
-
-    socket.emit('sendUser', user)
 })
 
-server.listen(3000, () => {
-    console.log('Listening to port ' + 3000)
+const PORT = 3000 || process.env.PORT
+
+server.listen(PORT, () => {
+    console.log('Listening to port ' + PORT)
 })
 
-// ngetik nama, message, submit ==> server
