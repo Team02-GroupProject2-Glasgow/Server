@@ -4,7 +4,7 @@ const app = express()
 const server = require('http').createServer(app)
 const io = require('socket.io')(server)
 
-const user = []
+let user = []
 
 const tebak_kata = [
   {
@@ -36,18 +36,37 @@ const tebak_kata = [
 
 io.on('connection', (socket) => {
     console.log('Socket.io client connected')
-    socket.emit('init', tebak_kata) // buat ngirim daftar kata ke browser kita sndiri
     // emit buat ngirim progres ngirim broadcast
     // jika ada event server nerima progres
     socket.on('getName', (payload) => {
-      user.push({
-        // id: user.length + 1,
+      let data = {
+        id: user.length + 1,
         name: payload,
         progress: 0
-      })
+      }
+      user.push(data)
+      socket.emit('sendYou', data)
+      io.emit('sendAllUser', user)
+      socket.emit('init', tebak_kata) // buat ngirim daftar kata ke browser kita sndiri
     })
 
-    socket.emit('sendUser', user)
+    socket.on('updateProgress', payload => {
+      user.forEach( el => {
+        if (el.id == payload.id) {
+          el.progress = payload.progress
+        }
+      })
+      io.emit('sendAllUser', user)
+    })
+
+    socket.on('disconnect', () => {
+      // let new_user = user.map( el => {
+      //   el.id != payload.id
+      // })
+      // user = new_user
+      console.log('user logout');
+    })
+
 })
 
 server.listen(3000, () => {
