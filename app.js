@@ -35,6 +35,7 @@ const tebak_kata = [
 
 io.on('connection', (socket) => {
     console.log('Socket.io client connected')
+
     socket.emit('init', tebak_kata)
 
     socket.on('getName', function(payload){
@@ -51,3 +52,4 @@ const PORT = 3000 || process.env.PORT
 server.listen(PORT, () => {
     console.log('Listening to port ' + PORT)
 })
+
