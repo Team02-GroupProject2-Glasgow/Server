@@ -69,7 +69,6 @@ io.on('connection', (socket) => {
     })
 
     socket.on('disconnect', () => {
-        console.log(user, 'sebelum')
         function userLeave(id){
             const index = user.findIndex(user => user.id === id)
 
@@ -78,7 +77,7 @@ io.on('connection', (socket) => {
             }
         }
         userLeave(socket.id)
-        console.log(user, 'sesudah')
+        io.emit('sendAllUser', user)
     })
 
 })
