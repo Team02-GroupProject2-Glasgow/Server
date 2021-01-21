@@ -45,6 +45,8 @@ io.on('connection', (socket) => {
             progress: 0
         })
     })
+
+    socket.emit('sendUser', user)
 })
 
 const PORT = 3000 || process.env.PORT
