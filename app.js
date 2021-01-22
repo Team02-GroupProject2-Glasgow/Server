@@ -36,6 +36,17 @@ const tebak_kata = [
 io.on('connection', (socket) => {
     console.log('Socket.io client connected')
     socket.emit('init', tebak_kata)
+
+    socket.on('joinRoom', ({ username, room, progress }) => {           
+      const newUser = userJoin(socket.id, username, room, progress);
+      console.log(newUser, '<== new user');
+      socket.emit('sendPlayer', newUser)
+      user.push(newUser);
+      socket.join(user.room);
+      io.emit('players', user)
+      console.log(user);
+    })
+
     socket.on('updateProgress', payload => {
       user.forEach( el => {
         if (el.id == payload.id) {
@@ -55,14 +66,8 @@ io.on('connection', (socket) => {
       io.emit('players', user)
     })
 
-    socket.on('joinRoom', ({ username, room, progress }) => {           
-      const newUser = userJoin(socket.id, username, room, progress);
-      console.log(newUser, '<== new user');
-      socket.emit('sendPlayer', newUser)
-      user.push(newUser);
-      socket.join(user.room);
-      io.emit('players', user)
-      console.log(user);
+    socket.on('getTheWinner', payload => {
+      io.emit('setTheWinner', payload)
     })
 
     socket.on('disconnect', () => {
