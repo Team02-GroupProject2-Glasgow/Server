@@ -1,4 +1,3 @@
-const cors = require('cors')
 const express = require('express')
 const app = express()
 const server = require('http').createServer(app)
@@ -33,7 +32,7 @@ const tebak_kata = [
     answer: 'cakep'
   }
 ]
-app.use(cors())
+
 io.on('connection', (socket) => {
     console.log('Socket.io client connected')
     socket.emit('init', tebak_kata)
