@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
       user.push(newUser);
       socket.join(user.room);
       io.emit('players', user)
-      console.log(user);
+      // console.log(user);
     })
 
     socket.on('updateProgress', payload => {
@@ -70,22 +70,28 @@ io.on('connection', (socket) => {
       io.emit('setTheWinner', payload)
     })
 
-    socket.on('disconnect', () => {
-        function userLeave(id){
-            const index = user.findIndex(user => user.id === id)
+    socket.on('restartGame', () => {
+      userLeave(socket.id)
+      console.log(socket.id, '<==leave');
+      io.emit('players', user)
+    })
 
-            if(index !== -1) {
-                return user.splice(index, 1)
-            }
-        }
-        userLeave(socket.id)
-        io.emit('players', user)
+    socket.on('disconnect', () => {
+      userLeave(socket.id)
+      io.emit('players', user)
     })
 })
 
 function userJoin(id, username, room, progress) {
   const newUser = { id, username, room, progress };
   return newUser
+}
+
+function userLeave(id){
+  const index = user.findIndex(user => user.id === id)
+  if(index !== -1) {
+      return user.splice(index, 1)
+  }
 }
 
 const PORT = 3000 || process.env.PORT
