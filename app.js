@@ -39,12 +39,33 @@ const tebak_kata = [
 ]
 
 io.on('connection', (socket) => {
-  console.log('Socket.io client connected')
-  socket.emit('init', tebak_kata)
-  socket.on('updateProgress', payload => {
-    user.forEach( el => {
-      if (el.id == payload.id) {
-        el.progress = payload.progress
+    console.log('Socket.io client connected')
+    socket.emit('init', tebak_kata)
+
+    socket.on('joinRoom', ({ username, room, progress }) => {           
+      const newUser = userJoin(socket.id, username, room, progress);
+      console.log(newUser, '<== new user');
+      socket.emit('sendPlayer', newUser)
+      user.push(newUser);
+      socket.join(user.room);
+      io.emit('players', user)
+      console.log(user);
+    })
+
+    socket.on('updateProgress', payload => {
+      user.forEach( el => {
+        if (el.id == payload.id) {
+          el.progress = payload.progress
+        }
+      })
+      function compare( a, b ) {
+        if ( a.progress < b.progress ){
+          return 1;
+        }
+        if ( a.progress > b.progress ){
+          return -1;
+        }
+        return 0;
       }
     })
     function compare( a, b ) {
@@ -60,6 +81,9 @@ io.on('connection', (socket) => {
     io.emit('players', user)
   })
 
+    socket.on('getTheWinner', payload => {
+      io.emit('setTheWinner', payload)
+    })
   socket.on('joinRoom', ({ username, room, progress }) => {           
     const newUser = userJoin(socket.id, username, room, progress);
     console.log(newUser, '<== new user');
