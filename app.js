@@ -1,3 +1,4 @@
+const cors = require('cors')
 const express = require('express')
 const app = express()
 const server = require('http').createServer(app)
@@ -32,7 +33,7 @@ const tebak_kata = [
     answer: 'cakep'
   }
 ]
-
+app.use(cors())
 io.on('connection', (socket) => {
     console.log('Socket.io client connected')
     socket.emit('init', tebak_kata)
@@ -81,7 +82,6 @@ io.on('connection', (socket) => {
         userLeave(socket.id)
         io.emit('players', user)
     })
-
 })
 
 function userJoin(id, username, room, progress) {
