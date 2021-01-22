@@ -35,22 +35,7 @@ const tebak_kata = [
 
 io.on('connection', (socket) => {
     console.log('Socket.io client connected')
-    // emit buat ngirim progres ngirim broadcast
-    // jika ada event server nerima progres
-    io.emit('players', user)
     socket.emit('init', tebak_kata)
-    socket.on('getName', (payload) => {
-      let data = {
-        id: socket.id,
-        name: payload,
-        progress: 0
-      }
-      user.push(data)
-      socket.emit('sendYou', data)
-      io.emit('sendAllUser', user)
-      socket.emit('init', tebak_kata) // buat ngirim daftar kata ke browser kita sndiri
-    })
-
     socket.on('updateProgress', payload => {
       user.forEach( el => {
         if (el.id == payload.id) {
@@ -67,14 +52,17 @@ io.on('connection', (socket) => {
         return 0;
       }
       user.sort( compare );
-      io.emit('sendAllUser', user)
+      io.emit('players', user)
     })
 
-    socket.on('joinRoom', ({ username, room }) => {           
-      const newUser = userJoin(socket.id, username, room);
-      socket.join(newUser.room);
+    socket.on('joinRoom', ({ username, room, progress }) => {           
+      const newUser = userJoin(socket.id, username, room, progress);
+      console.log(newUser, '<== new user');
+      socket.emit('sendPlayer', newUser)
+      user.push(newUser);
+      socket.join(user.room);
       io.emit('players', user)
-      console.log(user, username, room);
+      console.log(user);
     })
 
     socket.on('disconnect', () => {
@@ -86,16 +74,14 @@ io.on('connection', (socket) => {
             }
         }
         userLeave(socket.id)
-        io.emit('sendAllUser', user)
+        io.emit('players', user)
     })
 
 })
 
-function userJoin(id, username, room) {
-  const newUser = { id, username, room };
-  user.push(newUser);
-  console.log("🚀 ~ file: app.js ~ line 89 ~ userJoin ~ user", user)
-  return user;
+function userJoin(id, username, room, progress) {
+  const newUser = { id, username, room, progress };
+  return newUser
 }
 
 const PORT = 3000 || process.env.PORT
