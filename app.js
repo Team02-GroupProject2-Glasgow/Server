@@ -3,97 +3,92 @@ const cors = require("cors")
 const express = require('express')
 const app = express()
 const http = require('http').createServer(app);
+const PORT = 3000 || process.env.PORT
 const io = require('socket.io')(http)
-const { shuffleWord, getRandom } = require('./word')
-
-let score = {
-
-}
-
-let correct = []
-let counter = 0
-const submitted = new Set([])
-
 
 app.use(cors())
 
-let data = fs.readFileSync('./wordlist.json', 'UTF-8')
-let parse = JSON.parse(data)
-let currentWord = ''
-let shuffle = ''
+let user = []
 
-io.on('connect', (socket) => {
-  console.log('a user connected')
-  socket.emit('init', score)
+const tebak_kata = [
+  {
+    id: 1,
+    clue: ['kendaraan', 'roda empat', 'bensin', 'darat', 'supir'],
+    answer: 'mobil'
+  },
+  {
+    id: 2,
+    clue: ['istirahat', 'capek', 'menunggu', 'perabotan', 'kaki empat'],
+    answer: 'kursi'
+  },
+  {
+    id: 3,
+    clue: ['tipis', 'persegi panjang', 'ringan', 'permainan', 'joker'],
+    answer: 'kartu'
+  },
+  {
+    id: 4,
+    clue: ['bulat', 'makanan', 'daging', 'sapi', 'ikan'],
+    answer: 'bakso'
+  },
+  {
+    id: 5,
+    clue: ['penampilan', 'cowok', 'muka', 'ganteng', 'cewek juga bisa'],
+    answer: 'cakep'
+  }
+]
 
-  socket.on('newPlayer', function(player) {
-    const numPlayers = Object.keys(score).length
-    if(numPlayers === 2){
-      io.to(socket.id).emit('roomExceeded', 'I just met you');
-      return
+io.on('connection', (socket) => {
+  console.log('Socket.io client connected')
+  socket.emit('init', tebak_kata)
+  socket.on('updateProgress', payload => {
+    user.forEach( el => {
+      if (el.id == payload.id) {
+        el.progress = payload.progress
+      }
+    })
+    function compare( a, b ) {
+      if ( a.progress < b.progress ){
+        return 1;
+      }
+      if ( a.progress > b.progress ){
+        return -1;
+      }
+      return 0;
     }
-    score[player] = 0
-    io.emit('serverPlayers', score)
+    user.sort( compare );
+    io.emit('players', user)
   })
+
+  socket.on('joinRoom', ({ username, room, progress }) => {           
+    const newUser = userJoin(socket.id, username, room, progress);
+    console.log(newUser, '<== new user');
+    socket.emit('sendPlayer', newUser)
+    user.push(newUser);
+    socket.join(user.room);
+    io.emit('players', user)
+    console.log(user);
+  })
+
+  socket.on('disconnect', () => {
+    function userLeave(id){
+      const index = user.findIndex(user => user.id === id)
+
+      if(index !== -1) {
+        return user.splice(index, 1)
+      }
+   }
+  userLeave(socket.id)
+  io.emit('players', user)
+    
+
+  })
+
+function userJoin(id, username, room, progress) {
+  const newUser = { id, username, room, progress };
+  return newUser
+}    
+    
+server.listen(PORT, () => {
+  console.log('Listening to port ' + PORT)
   
-  socket.on('getQuestion', function () {
-    currentWord = parse[getRandom(1, 9)].word.toLowerCase() //jawaban
-    shuffle = shuffleWord(currentWord) //hasil shuffle
-    let payload = { currentWord, shuffle, score }
-    // console.log(payload, '<<<<<<<<<<<<di app.js')
-    counter++
-    io.emit('newQuestion', payload)
-  })
-
-  socket.on('checkAnswer', function (payload) {  
-    if(submitted.has(payload.player)){
-      return
-    }
-    submitted.add(payload.player)
-
-    if (payload.answer == currentWord ) {
-      score[payload.player] += 10
-      correct.push(true)
-    } else {
-      score[payload.player] += 0
-      correct.push(false) 
-    }
-
-    if(counter === 6){  //jumlah round untuk finish game
-      const [playerA, playerB] = Object.keys(score)
-      if(score[playerA] === score[playerB]){
-        io.emit('gameOverWithDraw', score)
-        return
-      }     
-      const winner = score[playerA] > score[playerB] ? playerA : playerB
-      counter = 0
-      io.emit('gameOverWithWinner', {...score, winner})
-      return
-    }
-
-    if(correct.some(e => e === true) || correct.length === 2){
-      currentWord = parse[getRandom(1, 2)].word.toLowerCase() //jawaban
-      shuffle = shuffleWord(currentWord) //hasil shufflean
-
-      let data = { currentWord, shuffle }
-      correct = []
-      submitted.clear()
-      io.emit('newQuestion', { ...data, score})
-      counter++
-      return 
-    }
-
-    io.emit('serverPlayers', score)
-  })
-
-  socket.on("exit", () => {
-    correct = []
-    submitted.clear()
-    score = {}
-    io.emit('exit')
-  })
-})
-
-http.listen(3000, () => {
-    console.log('listening on *:3000')
-})
